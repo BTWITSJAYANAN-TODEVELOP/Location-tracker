@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get GPS Location</title>
+</head>
+<body>
+    <h2>Click to Get Your Location</h2>
+    <button onclick="getLocation()">Get Location</button>
+    <p id="output"></p>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(success, error);
+            } else {
+                document.getElementById("output").innerText = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function success(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            document.getElementById("output").innerHTML = `Latitude: ${latitude}, Longitude: ${longitude}`;
+
+            // Send data to Python server
+            fetch("http://127.0.0.1:5000/location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ latitude, longitude })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("output").innerHTML += `<br>Address: ${data.address}`;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function error() {
+            document.getElementById("output").innerText = "Unable to retrieve location.";
+        }
+    </script>
+</body>
+</html>
